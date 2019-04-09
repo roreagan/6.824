@@ -55,7 +55,7 @@ func doReduce(
 	kvs := make(map[string][]string)
 	for i := 0; i < nMap; i++ {
 		filename := reduceName(jobName, i, reduceTask)
-		if buf, err := os.Open(filename); err != nil {
+		if buf, err := os.Open(filename); err == nil {
 			dec := json.NewDecoder(buf)
 			var keyvalue KeyValue
 			decerr := dec.Decode(&keyvalue)
@@ -77,7 +77,7 @@ func doReduce(
 		enc := json.NewEncoder(output)
 		for _, key := range ks {
 			keyreduce := reduceF(key, kvs[key])
-			if errenc := enc.Encode(KeyValue{key, keyreduce}); errenc == nil {
+			if errenc := enc.Encode(KeyValue{key, keyreduce}); errenc != nil {
 				fmt.Printf("An Error Happened in Encoding")
 			}
 		}

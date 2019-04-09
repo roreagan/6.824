@@ -70,14 +70,21 @@ func doMap(
 		i := ihash(keyvalue.Key) % nReduce
 		filename := reduceName(jobName, mapTask, i)
 		filedir := filepath.Join(basePath, filename)
-		if outfile, outerr := os.Create(filedir); outerr != nil {
-			fmt.Printf("An error occurred when creating file")
+		var outfile *os.File
+		if outputs[i] != nil {
+			outfile = outputs[i]
 		} else {
-			enc := json.NewEncoder(outfile)
-			if encerr := enc.Encode(&keyvalue); encerr != nil {
-				fmt.Printf("An error occurred when writing file")
+			if outtmp, outerr := os.Create(filedir); outerr != nil {
+				fmt.Printf("An error occurred when creating file")
+				continue
+			} else {
+				outfile = outtmp
+				outputs[i] = outfile
 			}
-			outputs[i] = outfile
+		}
+		enc := json.NewEncoder(outfile)
+		if encerr := enc.Encode(&keyvalue); encerr != nil {
+			fmt.Printf("An error occurred when writing file")
 		}
 	}
 
